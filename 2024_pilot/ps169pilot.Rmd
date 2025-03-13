@@ -1,0 +1,333 @@
+---
+title: "ps169"
+output: html_document
+date: "2024-05-20"
+---
+
+```{r}
+install.packages(c("plyr", "dplyr", "tidyr"), dep = T)
+require(plyr)
+require(dplyr)
+require(tidyr)
+```
+
+```{r}
+consumption_emissions <- read.csv("/Users/lukas/Downloads/consumption_emissions.csv")
+effective_parties <- read.csv("/Users/lukas/Downloads/qog.csv")
+
+effective_parties_filter <- effective_parties %>% filter(Indicator.ID == "QOG.BD.gol_enep")
+```
+
+getwd()
+write.csv(consumption_emissions_long,"celedit.csv")
+write.csv(effective_parties_filter,"epedit.csv")
+
+```{r}
+ep_edit1 <- read.csv("/Users/lukas/Downloads/epedit.csv")
+ep_edit2 <- ep_edit1 %>% pivot_longer(
+    cols = -country,
+    names_to = "year",
+    values_to = "effective_parties"
+  ) %>%
+ mutate(year = gsub("^X", "", year))
+cel_edit1 <- read.csv("/Users/lukas/Downloads/celedit.csv")
+merge_mult1 <- merge(ep_edit2,cel_edit1)
+print(merge_mult1)
+```
+
+```{r}
+library(dplyr)
+
+# Create a tibble with standardized country names and their variations
+country_mapping <- tibble(
+  standardized_name = c(
+    "Albania", "Argentina", "Armenia", "Australia", "Austria", "Azerbaijan", "Bahrain", "Bangladesh", 
+    "Belarus", "Belgium", "Benin", "Botswana", "Brazil", "Brunei Darussalam", "Bulgaria", "Burkina Faso", 
+    "Cambodia", "Canada", "Chile", "China", "Colombia", "Costa Rica", "Cote d'Ivoire", "Croatia", 
+    "Cyprus", "Czechia", "Denmark", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", 
+    "Estonia", "Ethiopia", "Finland", "France", "Georgia", "Germany", "Ghana", "Greece", "Guatemala", 
+    "Guinea", "Honduras", "Hong Kong", "Hungary", "India", "Indonesia", "Iran", "Ireland", "Israel", 
+    "Italy", "Jamaica", "Japan", "Jordan", "Kazakhstan", "Kenya", "Kuwait", "Kyrgyzstan", "Laos", 
+    "Latvia", "Lithuania", "Luxembourg", "Madagascar", "Malawi", "Malaysia", "Malta", "Mauritius", 
+    "Mexico", "Mongolia", "Morocco", "Mozambique", "Namibia", "Nepal", "Netherlands", "New Zealand", 
+    "Nicaragua", "Nigeria", "Oman", "Pakistan", "Panama", "Paraguay", "Peru", "Philippines", "Bolivia", 
+    "Poland", "Portugal", "Qatar", "Cameroon", "South Korea", "Romania", "Russia", "Rwanda", "Saudi Arabia", 
+    "Senegal", "Singapore", "Slovakia", "Slovenia", "South Africa", "Spain", "Sri Lanka", "Sweden", 
+    "Switzerland", "Taiwan", "Tajikistan", "Thailand", "Togo", "Trinidad and Tobago", "Tunisia", "Turkiye", 
+    "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "Tanzania", "United States", "Uruguay", 
+    "Venezuela", "Vietnam", "Zambia", "Zimbabwe"
+  ),
+  variations = list(
+    c("ALBANIA", "Republic of Albania"),
+    c("ARGENTINA", "Argentine Republic"),
+    c("ARMENIA", "Republic of Armenia"),
+    c("AUSTRALIA", "Commonwealth of Australia"),
+    c("AUSTRIA", "Republic of Austria"),
+    c("AZERBAIJAN", "Republic of Azerbaijan"),
+    c("BAHRAIN", "Kingdom of Bahrain"),
+    c("BANGLADESH", "People's Republic of Bangladesh"),
+    c("BELARUS", "Republic of Belarus"),
+    c("BELGIUM", "Kingdom of Belgium"),
+    c("BENIN", "Republic of Benin"),
+    c("BOTSWANA", "Republic of Botswana"),
+    c("BRAZIL", "Federative Republic of Brazil"),
+    c("BRUNEI..DARUSSALAM.", "Brunei Darussalam"),
+    c("BULGARIA", "Republic of Bulgaria"),
+    c("BURKINA.FASO", "Burkina Faso"),
+    c("CAMBODIA", "Kingdom of Cambodia"),
+    c("CANADA", "Canada"),
+    c("CHILE", "Republic of Chile"),
+    c("CHINA..MAINLAND.", "China"),
+    c("COLOMBIA", "Republic of Colombia"),
+    c("COSTA.RICA", "Republic of Costa Rica"),
+    c("COTE.D.IVOIRE", "Ivory Coast", "Republic of Côte d'Ivoire"),
+    c("CROATIA", "Republic of Croatia"),
+    c("CYPRUS", "Republic of Cyprus"),
+    c("CZECHIA", "Czech Republic"),
+    c("DENMARK", "Kingdom of Denmark"),
+    c("DOMINICAN.REPUBLIC", "Dominican Republic"),
+    c("ECUADOR", "Republic of Ecuador"),
+    c("EGYPT", "Arab Republic of Egypt"),
+    c("EL.SALVADOR", "Republic of El Salvador"),
+    c("ESTONIA", "Republic of Estonia"),
+    c("ETHIOPIA", "Federal Democratic Republic of Ethiopia"),
+    c("FINLAND", "Republic of Finland"),
+    c("FRANCE..INCLUDING.MONACO.", "France"),
+    c("GEORGIA", "Georgia"),
+    c("GERMANY", "Federal Republic of Germany"),
+    c("GHANA", "Republic of Ghana"),
+    c("GREECE", "Hellenic Republic"),
+    c("GUATEMALA", "Republic of Guatemala"),
+    c("GUINEA", "Republic of Guinea"),
+    c("HONDURAS", "Republic of Honduras"),
+    c("HONG.KONG.SPECIAL.ADMINSTRATIVE.REGION.OF.CHINA", "Hong Kong"),
+    c("HUNGARY", "Hungary"),
+    c("INDIA", "Republic of India"),
+    c("INDONESIA", "Republic of Indonesia"),
+    c("ISLAMIC.REPUBLIC.OF.IRAN", "Iran"),
+    c("IRELAND", "Republic of Ireland"),
+    c("ISRAEL", "State of Israel"),
+    c("ITALY..INCLUDING.SAN.MARINO.", "Italy"),
+    c("JAMAICA", "Jamaica"),
+    c("JAPAN", "Japan"),
+    c("JORDAN", "Hashemite Kingdom of Jordan"),
+    c("KAZAKHSTAN", "Republic of Kazakhstan"),
+    c("KENYA", "Republic of Kenya"),
+    c("KUWAIT", "State of Kuwait"),
+    c("KYRGYZSTAN", "Kyrgyz Republic"),
+    c("LAO.PEOPLE.S.DEMOCRATIC.REPUBLIC", "Laos"),
+    c("LATVIA", "Republic of Latvia"),
+    c("LITHUANIA", "Republic of Lithuania"),
+    c("LUXEMBOURG", "Grand Duchy of Luxembourg"),
+    c("MADAGASCAR", "Republic of Madagascar"),
+    c("MALAWI", "Republic of Malawi"),
+    c("MALAYSIA", "Malaysia"),
+    c("MALTA", "Republic of Malta"),
+    c("MAURITIUS", "Republic of Mauritius"),
+    c("MEXICO", "United Mexican States"),
+    c("MONGOLIA", "Mongolia"),
+    c("MOROCCO", "Kingdom of Morocco"),
+    c("MOZAMBIQUE", "Republic of Mozambique"),
+    c("NAMIBIA", "Republic of Namibia"),
+    c("NEPAL", "Federal Democratic Republic of Nepal"),
+    c("NETHERLANDS", "Kingdom of the Netherlands"),
+    c("NEW.ZEALAND", "New Zealand"),
+    c("NICARAGUA", "Republic of Nicaragua"),
+    c("NIGERIA", "Federal Republic of Nigeria"),
+    c("OMAN", "Sultanate of Oman"),
+    c("PAKISTAN", "Islamic Republic of Pakistan"),
+    c("PANAMA", "Republic of Panama"),
+    c("PARAGUAY", "Republic of Paraguay"),
+    c("PERU", "Republic of Peru"),
+    c("PHILIPPINES", "Republic of the Philippines"),
+    c("PLURINATIONAL.STATE.OF.BOLIVIA", "Bolivia"),
+    c("POLAND", "Republic of Poland"),
+    c("PORTUGAL", "Portuguese Republic"),
+    c("QATAR", "State of Qatar"),
+    c("REPUBLIC.OF.CAMEROON", "Cameroon"),
+    c("REPUBLIC.OF.KOREA", "South Korea", "Korea, Rep."),
+    c("ROMANIA", "Romania"),
+    c("RUSSIAN.FEDERATION", "Russia", "Russian Federation"),
+    c("RWANDA", "Republic of Rwanda"),
+    c("SAUDI.ARABIA", "Kingdom of Saudi Arabia"),
+    c("SENEGAL", "Republic of Senegal"),
+    c("SINGAPORE", "Republic of Singapore"),
+    c("SLOVAKIA", "Slovak Republic"),
+    c("SLOVENIA", "Republic of Slovenia"),
+    c("SOUTH.AFRICA", "Republic of South Africa"),
+    c("SPAIN", "Kingdom of Spain"),
+    c("SRI.LANKA", "Democratic Socialist Republic of Sri Lanka"),
+    c("SWEDEN", "Kingdom of Sweden"),
+    c("SWITZERLAND", "Swiss Confederation"),
+    c("TAIWAN", "Republic of China (Taiwan)"),
+    c("TAJIKISTAN", "Republic of Tajikistan"),
+    c("THAILAND", "Kingdom of Thailand"),
+    c("TOGO", "Togolese Republic"),
+    c("TRINIDAD.AND.TOBAGO", "Republic of Trinidad and Tobago"),
+    c("TUNISIA", "Tunisian Republic"),
+    c("TURKEY", "Republic of Turkey"),
+    c("UGANDA", "Republic of Uganda"),
+    c("UKRAINE", "Ukraine"),
+    c("UNITED.ARAB.EMIRATES", "United Arab Emirates"),
+    c("UNITED.KINGDOM", "United Kingdom"),
+    c("UNITED.REPUBLIC.OF.TANZANIA", "Tanzania"),
+    c("UNITED.STATES.OF.AMERICA", "United States"),
+    c("URUGUAY", "Eastern Republic of Uruguay"),
+    c("VENEZUELA", "Bolivarian Republic of Venezuela"),
+    c("VIET.NAM", "Vietnam"),
+    c("ZAMBIA", "Republic of Zambia"),
+    c("ZIMBABWE", "Republic of Zimbabwe")
+  )
+)
+
+# Function to standardize country names
+standardize_country_name <- function(country_name) {
+  for (i in seq_along(country_mapping$variations)) {
+    if (country_name %in% country_mapping$variations[[i]]) {
+      return(country_mapping$standardized_name[i])
+    }
+  }
+  return(country_name) # Return the original name if no match is found
+}
+```
+
+```{r}
+cel_edit2 <- cel_edit1 %>%
+  mutate(country = sapply(country, standardize_country_name)) %>%
+  select(-X)
+print(cel_edit2)
+ep_edit2$year <- as.integer(ep_edit2$year)
+print(ep_edit2)
+```
+
+```{r}
+merged_data <- inner_join(cel_edit2, ep_edit2, by = c("country", "year"))
+print(merged_data)
+```
+
+```{r}
+model1 <- lm(consumption_emissions ~ effective_parties,data=merged_data)
+model2<- lm(consumption_emissions ~ effective_parties + as.factor(country),data=merged_data)
+```
+
+```{r}
+summary(model1)
+```
+
+```{r}
+summary(model2)
+```
+
+write.csv(merged_data,"mergedata.csv")
+
+
+```{r}
+merged_data2 <- read.csv("/Users/lukas/Downloads/mergedata.csv")
+head(merged_data2)
+```
+
+```{r}
+model3 <- lm(consumption_emissions ~ effective_parties + general_conscious + as.factor(country),data=merged_data2)
+summary(model3)
+```
+
+```{r}
+fism_filter <- effective_parties %>% filter(Indicator.ID == "QOG.BD.iaep_ufs")
+head(fism_filter)
+dev_filter <- effective_parties %>% filter(Indicator.ID == "QOG.BD.undp_hdi")
+head(dev_filter)
+```
+
+write.csv(fism_filter,"fismedit.csv")
+write.csv(dev_filter,"devedit.csv")
+
+```{r}
+fismedit1 <- read.csv("/Users/lukas/Downloads/fismedit.csv")
+fismedit2 <- fismedit1 %>% pivot_longer(
+    cols = -country,
+    names_to = "year",
+    values_to = "federalism_status"
+  ) %>%
+ mutate(year = gsub("^X", "", year))%>%
+  mutate(country = sapply(country, standardize_country_name))
+fismedit2$federalism_status <- (fismedit2$federalism_status-1)/2 
+
+devedit1 <- read.csv("/Users/lukas/Downloads/devedit.csv")
+devedit2 <- devedit1 %>% pivot_longer(
+    cols = -country,
+    names_to = "year",
+    values_to = "development"
+  ) %>%
+ mutate(year = gsub("^X", "", year)) %>%
+  mutate(country = sapply(country, standardize_country_name))
+
+merged_data3 <- merge(fismedit2,devedit2)
+merged_data4 <- merge(merged_data2,merged_data3)
+```
+
+```{r}
+model4 <- lm(consumption_emissions ~ effective_parties + general_conscious + federalism_status + development,data=merged_data4)
+summary(model4)
+```
+
+```{r}
+model5 <- lm(consumption_emissions ~ effective_parties + general_conscious + federalism_status + development + as.factor(country),data=merged_data4)
+summary(model5)
+```
+
+```{r}
+pop <- read.csv("/Users/lukas/Downloads/population.csv")
+pop %>% mutate(country = sapply(country, standardize_country_name))
+merged_data5 <- merge(merged_data4,pop) %>%
+  select(-X)
+head(merged_data5)
+```
+
+```{r}
+merged5_scaled <- as.data.frame(scale(merged_data5[, c('effective_parties', 'general_conscious', 'federalism_status', 'development', 'population')]))
+merged5_scaled$country <- merged_data5$country
+merged5_scaled$year <- merged_data5$year
+merged5_scaled$consumption_emissions <- merged_data5$consumption_emissions
+merged5_scaled$country <- as.factor(merged5_scaled$country)
+merged5_scaled$year <- as.factor(merged5_scaled$year)
+head(merged5_scaled)
+```
+
+```{r}
+model6 <- lm(consumption_emissions ~ effective_parties + general_conscious + population + federalism_status + development,data=merged5_scaled)
+summary(model6)
+```
+
+```{r}
+model7 <- lm(consumption_emissions ~ effective_parties + general_conscious + population + federalism_status + development + as.factor(country),data=merged5_scaled)
+summary(model7)
+```
+
+```{r}
+green_filter<- effective_parties %>% filter(Indicator.ID == "QOG.BD.cpds_lg")
+head(green_filter)
+```
+
+write.csv(green_filter,"greenedit.csv")
+
+```{r}
+greenedit1 <- read.csv("/Users/lukas/Downloads/greenedit.csv")
+greenedit2 <- greenedit1 %>% pivot_longer(
+    cols = -country,
+    names_to = "year",
+    values_to = "share_green"
+  ) %>%
+ mutate(year = gsub("^X", "", year)) %>%
+  mutate(country = sapply(country, standardize_country_name))
+```
+
+```{r}
+merge_data_robust <- merge(merged5_scaled,greenedit2)
+```
+
+```{r}
+model8 <- lm(consumption_emissions ~ share_green + general_conscious + population + federalism_status + development + as.factor(country),data=merge_data_robust)
+summary(model8)
+```
+write.csv(merged5_scaled,"ps169pilot.csv")
+write.csv(merge_data_robust,"ps169robust.csv")
